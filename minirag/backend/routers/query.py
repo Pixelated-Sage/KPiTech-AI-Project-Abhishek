@@ -1,16 +1,14 @@
 import time
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from minirag.backend.models.schemas import QueryRequest, QueryResponse, SimilarityRow
 
 router = APIRouter()
 
-def get_services():
-    from minirag.backend.main import embedder, vector_store, generator
-    return embedder, vector_store, generator
-
 @router.post("/query", response_model=QueryResponse)
-async def query_document(req: QueryRequest):
-    embedder, vector_store, generator = get_services()
+async def query_document(req: QueryRequest, request: Request):
+    embedder = request.app.state.embedder
+    vector_store = request.app.state.vector_store
+    generator = request.app.state.generator
 
     if not hasattr(vector_store, "collection") or vector_store.collection is None:
         raise HTTPException(400, "No document uploaded yet. Please upload an MSA PDF first.")

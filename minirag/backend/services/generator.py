@@ -18,12 +18,14 @@ class GeneratorService:
             f"[Chunk {i+1}]: {chunk}" for i, chunk in enumerate(context_chunks)
         )
         prompt = (
-            "You are a contract analysis assistant. Answer the user's question "
-            "ONLY using the provided context from a Master Service Agreement.\n\n"
+            "You are a document analysis assistant. Answer the user's question "
+            "comprehensively using the provided context.\n\n"
             "RULES:\n"
-            "- Answer ONLY from the context below\n"
-            "- If not found, say: 'The answer was not found in the provided contract sections.'\n"
-            "- Be concise and specific\n\n"
+            "- Answer using only the provided context\n"
+            "- Be comprehensive: include specific names, dates, and full tech stacks mentioned in the context\n"
+            "- If multiple valid answers exist, summarise all of them\n"
+            "- If not found, say exactly: 'Not found in the document.'\n"
+            "- No preamble, no rephrasing the question\n\n"
             f"CONTEXT:\n{context}\n\n"
             f"QUESTION: {question}\n\nANSWER:"
         )
@@ -32,7 +34,7 @@ class GeneratorService:
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
-            max_tokens=500,
+            max_tokens=150,
         )
         ms = int((time.time() - start) * 1000)
         return {

@@ -1,19 +1,18 @@
 import json
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from minirag.backend.models.schemas import EvaluationResponse, EvaluationResult, EvaluationSummary
 
 router = APIRouter()
 
 GROUND_TRUTH_PATH = Path(__file__).parent.parent / "data" / "ground_truth.json"
 
-def get_services():
-    from minirag.backend.main import embedder, vector_store, generator, judge
-    return embedder, vector_store, generator, judge
-
 @router.post("/evaluate", response_model=EvaluationResponse)
-async def run_evaluation():
-    embedder, vector_store, generator, judge_svc = get_services()
+async def run_evaluation(request: Request):
+    embedder = request.app.state.embedder
+    vector_store = request.app.state.vector_store
+    generator = request.app.state.generator
+    judge_svc = request.app.state.judge
 
     if not hasattr(vector_store, "collection") or vector_store.collection is None:
         raise HTTPException(400, "No document uploaded yet")

@@ -1,62 +1,62 @@
 [
   {
     "id": 1,
-    "category": "Payment Terms",
-    "question": "When is an invoice due after it is issued?",
-    "expected_answer": "Invoices are due Net 30 days from the date of issuance."
+    "category": "Personal Info",
+    "question": "What is the candidate's name and role?",
+    "expected_answer": "Abhishek Sharma, Frontend-Focused Full Stack Developer."
   },
   {
     "id": 2,
-    "category": "Late Payment Penalty",
-    "question": "Is there a penalty for late payment, and what is the rate?",
-    "expected_answer": "Late payments accrue interest at 1.5% per month on the outstanding balance."
+    "category": "Contact",
+    "question": "What is Abhishek's email address?",
+    "expected_answer": "thepixelatedsage@gmail.com"
   },
   {
     "id": 3,
-    "category": "Delivery Deadline Penalty",
-    "question": "What is the penalty for the provider missing a delivery milestone?",
-    "expected_answer": "The penalty is 2% per week of delay, capped at 10% of total contract value."
+    "category": "Frontend Skills",
+    "question": "What frontend technologies does Abhishek know?",
+    "expected_answer": "HTML5, CSS3, JavaScript (ES6+), React.js, Tailwind, Vite, React Router, Framer Motion, TypeScript, and Next.js."
   },
   {
     "id": 4,
-    "category": "Termination Conditions",
-    "question": "Under what conditions can either party terminate this agreement?",
-    "expected_answer": "Either party may terminate for material breach with 30 days written notice, or for convenience with 60 days notice."
+    "category": "Backend Skills",
+    "question": "What backend and infrastructure skills does Abhishek have?",
+    "expected_answer": "Node.js, Express, REST API, Redux, GraphQL (basic), Docker (basic), and CI/CD basics."
   },
   {
     "id": 5,
-    "category": "Termination Notice Period",
-    "question": "How many days written notice is required to terminate for convenience?",
-    "expected_answer": "60 days written notice is required for termination for convenience."
+    "category": "Projects",
+    "question": "What is the MentorKrish project?",
+    "expected_answer": "MentorKrish is a deployed website client project built by Abhishek."
   },
   {
     "id": 6,
-    "category": "Limitation of Liability",
-    "question": "What is the maximum liability cap defined in this contract?",
-    "expected_answer": "Maximum liability is capped at the total fees paid in the 12 months preceding the claim."
+    "category": "Projects",
+    "question": "What full stack web app project did Abhishek build?",
+    "expected_answer": "Abhishek built a Full Stack Web App involving DSA basics, completed between June and July 2025."
   },
   {
     "id": 7,
-    "category": "Intellectual Property",
-    "question": "Who retains ownership of IP created under this agreement?",
-    "expected_answer": "The client retains ownership of all IP and deliverables created under this agreement."
+    "category": "Leadership",
+    "question": "What leadership or extracurricular activities has Abhishek done?",
+    "expected_answer": "Abhishek coordinated a college project/ERP 2.0 hackathon, acted as a Super 60 Coordinator mentoring 200+ students, and ran technical sessions/SkillUp C++ workshops. (Any of these are valid)."
   },
   {
     "id": 8,
-    "category": "Confidentiality Duration",
-    "question": "How long do confidentiality obligations remain in force after termination?",
-    "expected_answer": "Confidentiality obligations survive for 3 years after termination of the agreement."
+    "category": "Freelance",
+    "question": "Has Abhishek done any freelance work?",
+    "expected_answer": "Yes, Abhishek has done freelance graphic design work."
   },
   {
     "id": 9,
-    "category": "Governing Law",
-    "question": "Which state or jurisdiction governs this agreement?",
-    "expected_answer": "This agreement is governed by the laws of the State of Delaware."
+    "category": "Intermediate Skills",
+    "question": "Which technologies does Abhishek have intermediate proficiency in?",
+    "expected_answer": "TypeScript, Next.js, Node.js, Express, and REST API."
   },
   {
     "id": 10,
-    "category": "Dispute Resolution",
-    "question": "What is the defined process for resolving disputes between the parties?",
-    "expected_answer": "Disputes are first resolved through good-faith negotiation, then mediation, and finally binding arbitration."
+    "category": "Summary",
+    "question": "How would you summarise Abhishek's profile?",
+    "expected_answer": "Abhishek Sharma is a frontend-focused full stack developer skilled in React, Next.js, Node.js, and modern web tooling, with experience in deployed client projects, hackathons, and freelance design."
   }
 ]

@@ -1,5 +1,12 @@
+import logging
 from sentence_transformers import SentenceTransformer
 import numpy as np
+
+# Suppress the harmless "UNEXPECTED: embeddings.position_ids" load report.
+# This buffer was added in newer HuggingFace transformers but isn't stored in
+# the all-MiniLM-L6-v2 checkpoint — it's auto-initialized and safe to ignore.
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
+logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
 
 class EmbeddingService:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
