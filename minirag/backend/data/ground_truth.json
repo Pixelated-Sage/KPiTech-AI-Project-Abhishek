@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "category": "Payment Terms",
+    "question": "When is an invoice due after it is issued?",
+    "expected_answer": "Invoices are due Net 30 days from the date of issuance."
+  },
+  {
+    "id": 2,
+    "category": "Late Payment Penalty",
+    "question": "Is there a penalty for late payment, and what is the rate?",
+    "expected_answer": "Late payments accrue interest at 1.5% per month on the outstanding balance."
+  },
+  {
+    "id": 3,
+    "category": "Delivery Deadline Penalty",
+    "question": "What is the penalty for the provider missing a delivery milestone?",
+    "expected_answer": "The penalty is 2% per week of delay, capped at 10% of total contract value."
+  },
+  {
+    "id": 4,
+    "category": "Termination Conditions",
+    "question": "Under what conditions can either party terminate this agreement?",
+    "expected_answer": "Either party may terminate for material breach with 30 days written notice, or for convenience with 60 days notice."
+  },
+  {
+    "id": 5,
+    "category": "Termination Notice Period",
+    "question": "How many days written notice is required to terminate for convenience?",
+    "expected_answer": "60 days written notice is required for termination for convenience."
+  },
+  {
+    "id": 6,
+    "category": "Limitation of Liability",
+    "question": "What is the maximum liability cap defined in this contract?",
+    "expected_answer": "Maximum liability is capped at the total fees paid in the 12 months preceding the claim."
+  },
+  {
+    "id": 7,
+    "category": "Intellectual Property",
+    "question": "Who retains ownership of IP created under this agreement?",
+    "expected_answer": "The client retains ownership of all IP and deliverables created under this agreement."
+  },
+  {
+    "id": 8,
+    "category": "Confidentiality Duration",
+    "question": "How long do confidentiality obligations remain in force after termination?",
+    "expected_answer": "Confidentiality obligations survive for 3 years after termination of the agreement."
+  },
+  {
+    "id": 9,
+    "category": "Governing Law",
+    "question": "Which state or jurisdiction governs this agreement?",
+    "expected_answer": "This agreement is governed by the laws of the State of Delaware."
+  },
+  {
+    "id": 10,
+    "category": "Dispute Resolution",
+    "question": "What is the defined process for resolving disputes between the parties?",
+    "expected_answer": "Disputes are first resolved through good-faith negotiation, then mediation, and finally binding arbitration."
+  }
+]

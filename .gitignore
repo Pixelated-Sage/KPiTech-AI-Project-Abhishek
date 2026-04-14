@@ -2,3 +2,12 @@ docs/
 .claude
 KPiTech_AI_Project_Brief_Abhishek_v3.docx
 KPiTech_AI_Project_Brief_Abhishek_v3.txt
+.playwright-mcp/
+.idea/
+.~lock.KPiTech_AI_Project_Brief_Abhishek_v3.docx#
+
+graphify-out
+minirag/backend/node_modules
+minirag/backend/dist
+minirag/backend/.env
+minirag/backend/.env.local
