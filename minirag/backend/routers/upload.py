@@ -24,25 +24,38 @@ async def upload_document(file: UploadFile, request: Request):
     try:
         from minirag.backend.services.pdf_extractor import extract_pdf
         from minirag.backend.services.chunker import chunk_document
+        import traceback
 
-        pages = extract_pdf(tmp_path)
-        if not pages:
-            raise HTTPException(422, "No extractable text found in PDF")
+        try:
+            pages = extract_pdf(tmp_path)
+            if not pages:
+                raise HTTPException(422, "No extractable text found in PDF")
+        except Exception as e:
+            raise HTTPException(500, f"extract_pdf crashed: {str(e)}\n{traceback.format_exc()}")
 
-        chunks = chunk_document(
-            pages,
-            chunk_size=int(os.getenv("CHUNK_SIZE", 512)),
-            chunk_overlap=int(os.getenv("CHUNK_OVERLAP", 50)),
-        )
-        if not chunks:
-            raise HTTPException(422, "Document produced no chunks")
+        try:
+            chunks = chunk_document(
+                pages,
+                chunk_size=int(os.getenv("CHUNK_SIZE", 512)),
+                chunk_overlap=int(os.getenv("CHUNK_OVERLAP", 50)),
+            )
+            if not chunks:
+                raise HTTPException(422, "Document produced no chunks")
+        except Exception as e:
+            raise HTTPException(500, f"chunk_document crashed: {str(e)}\n{traceback.format_exc()}")
 
-        embeddings = embedder.embed_texts([c.text for c in chunks])
+        try:
+            embeddings = embedder.embed_texts([c.text for c in chunks])
+        except Exception as e:
+            raise HTTPException(500, f"embed_texts crashed: {str(e)}\n{traceback.format_exc()}")
 
-        # Reset collection before adding new document
-        vector_store.reset()
-        vector_store.create_collection()
-        vector_store.add_chunks(chunks, embeddings)
+        try:
+            # Reset collection before adding new document
+            vector_store.reset()
+            vector_store.create_collection()
+            vector_store.add_chunks(chunks, embeddings)
+        except Exception as e:
+            raise HTTPException(500, f"vector_store crashed: {str(e)}\n{traceback.format_exc()}")
 
         doc_id = (file.filename or "document").replace(".pdf", "")
         return UploadResponse(
@@ -52,5 +65,10 @@ async def upload_document(file: UploadFile, request: Request):
             total_chunks=len(chunks),
             embedding_model=embedder.model_name,
         )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        raise HTTPException(500, f"Unexpected error: {str(e)}\n{traceback.format_exc()}")
     finally:
         os.unlink(tmp_path)
