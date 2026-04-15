@@ -18,7 +18,7 @@ def extract_pdf(file_path: str) -> list[PageContent]:
     
     for page_num in range(len(pdf)):
         page = pdf.get_page(page_num)
-        text_page = page.get_text_page()
+        text_page = page.get_textpage()
         raw_text = text_page.get_text_range()
         
         if not raw_text or not raw_text.strip():
