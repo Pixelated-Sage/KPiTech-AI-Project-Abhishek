@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { FileUpload } from "@/components/FileUpload"
 import { EvaluationTable } from "@/components/EvaluationTable"
 import { api, UploadResult, QueryResult, EvalResult } from "@/lib/api"
-import { Paperclip, Globe, Smile, MoreHorizontal, Send, X, Bot, Activity, CheckCircle2, ChevronRight, Menu } from "lucide-react"
+import { Paperclip, Globe, Smile, MoreHorizontal, Send, X, Bot, Activity, CheckCircle2, ChevronRight } from "lucide-react"
 import { SimilarityReport } from "@/components/SimilarityReport"
 
 type Message = {
@@ -66,7 +66,7 @@ export default function Home() {
     try {
       setEvalResult(await api.evaluate())
       setShowEval(true)
-    } catch (e) {
+    } catch {
       alert("Evaluation failed")
     } finally {
       setEvaluating(false)
@@ -86,7 +86,7 @@ export default function Home() {
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome to MiniRAG</h1>
-            <p className="text-white/60">Upload the candidate's CV to begin chatting.</p>
+            <p className="text-white/60">Upload the candidate&apos;s CV to begin chatting.</p>
           </div>
           <FileUpload onDone={setUploadResult} />
         </div>
@@ -132,7 +132,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="space-y-6">
-              {messages.map((msg, i) => (
+              {messages.map((msg) => (
                 <div key={msg.id} className="animate-in slide-in-from-bottom-2 fade-in duration-300">
                   {msg.role === "agent" ? (
                     <div className="bg-agent border border-white/5 rounded-2xl rounded-tl-sm p-5 shadow-sm max-w-[95%]">
