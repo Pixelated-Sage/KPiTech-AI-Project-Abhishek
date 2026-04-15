@@ -18,4 +18,18 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          # Remove Git history so we don't push old binary files
+          rm -rf .git
+
+          # Delete any offending binary files from the deploy bundle
+          find . -name "*.pdf" -type f -delete
+          find . -name "*.sqlite3" -type f -delete
+          find . -name "*.bin" -type f -delete
+
+          # Initialize a fresh git repo just for Hugging Face
+          git config --global user.email "bot@example.com"
+          git config --global user.name "Bot"
+          git init
+          git add .
+          git commit -m "Deploy to Hugging Face"
           git push https://ThepixelSage:$HF_TOKEN@huggingface.co/spaces/ThepixelSage/minirag-backend main -f
