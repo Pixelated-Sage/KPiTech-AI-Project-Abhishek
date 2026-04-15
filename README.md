@@ -1,3 +1,12 @@
+---
+title: MiniRAG Backend
+emoji: 🚀
+colorFrom: blue
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
 # KPiTech AI Project - MiniRAG
 
 A full-stack Retrieval-Augmented Generation (RAG) web application designed for Master Service Agreement (MSA) document analysis.
