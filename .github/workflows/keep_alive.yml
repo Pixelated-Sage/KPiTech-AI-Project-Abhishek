@@ -1,0 +1,20 @@
+name: Keep Alive Render
+
+on:
+  schedule:
+    - cron: "*/14 * * * *" # Every 14 minutes (Render sleeps at 15m)
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend
+        run: |
+          URL="https://kpitech-ai-project-abhishek.onrender.com/api/health"
+          echo "Pinging $URL..."
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "Status: $status_code"
+          if [ "$status_code" -ne 200 ]; then
+            echo "Warning: Backend might be waking up or down."
+          fi
