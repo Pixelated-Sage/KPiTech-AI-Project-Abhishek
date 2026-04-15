@@ -14,9 +14,9 @@ type Message = {
 }
 
 const SUGGESTIONS = [
-  "What are",
-  "Tell me about his projects",
-  "How can I contact him?"
+  "When is an invoice due after it is issued?",
+  "Is there a penalty for late payment, and what is the rate?",
+  "What is the penalty for the provider missing a delivery milestone?"
 ]
 
 export default function Home() {
@@ -86,7 +86,7 @@ export default function Home() {
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome to MiniRAG</h1>
-            <p className="text-white/60">Upload the candidate&apos;s CV to begin chatting.</p>
+            <p className="text-white/60">Upload the MSA Document</p>
           </div>
           <FileUpload onDone={setUploadResult} />
         </div>
