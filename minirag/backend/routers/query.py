@@ -6,9 +6,8 @@ router = APIRouter()
 
 @router.post("/query", response_model=QueryResponse)
 async def query_document(req: QueryRequest, request: Request):
-    embedder = request.app.state.embedder
-    vector_store = request.app.state.vector_store
-    generator = request.app.state.generator
+    from minirag.backend.main import get_services
+    embedder, vector_store, generator, _ = get_services(request.app)
 
     if not hasattr(vector_store, "collection") or vector_store.collection is None:
         raise HTTPException(400, "No document uploaded yet. Please upload an MSA PDF first.")

@@ -9,10 +9,8 @@ GROUND_TRUTH_PATH = Path(__file__).parent.parent / "data" / "ground_truth.json"
 
 @router.post("/evaluate", response_model=EvaluationResponse)
 async def run_evaluation(request: Request):
-    embedder = request.app.state.embedder
-    vector_store = request.app.state.vector_store
-    generator = request.app.state.generator
-    judge_svc = request.app.state.judge
+    from minirag.backend.main import get_services
+    embedder, vector_store, generator, judge_svc = get_services(request.app)
 
     if not hasattr(vector_store, "collection") or vector_store.collection is None:
         raise HTTPException(400, "No document uploaded yet")

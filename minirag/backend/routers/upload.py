@@ -11,8 +11,8 @@ async def upload_document(file: UploadFile, request: Request):
         if not (file.filename or "").endswith(".pdf"):
             raise HTTPException(400, "Only PDF files accepted")
 
-    embedder = request.app.state.embedder
-    vector_store = request.app.state.vector_store
+    from minirag.backend.main import get_services
+    embedder, vector_store, _, _ = get_services(request.app)
     contents = await file.read()
     if len(contents) < 100:
         raise HTTPException(422, "File appears empty")
