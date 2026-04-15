@@ -1,62 +1,62 @@
 [
   {
     "id": 1,
-    "category": "Personal Info",
-    "question": "What is the candidate's name and role?",
-    "expected_answer": "Abhishek Sharma, Frontend-Focused Full Stack Developer."
+    "category": "Payment Terms",
+    "question": "When is an invoice due after it is issued?",
+    "expected_answer": "Invoiced fees are due net 30 days from the invoice date."
   },
   {
     "id": 2,
-    "category": "Contact",
-    "question": "What is Abhishek's email address?",
-    "expected_answer": "thepixelatedsage@gmail.com"
+    "category": "Late Payment Penalty",
+    "question": "Is there a penalty for late payment, and what is the rate?",
+    "expected_answer": "Overdue charges accrue late interest at the rate of 1.5% of the outstanding balance per month, or the maximum rate permitted by law, whichever is lower."
   },
   {
     "id": 3,
-    "category": "Frontend Skills",
-    "question": "What frontend technologies does Abhishek know?",
-    "expected_answer": "HTML5, CSS3, JavaScript (ES6+), React.js, Tailwind, Vite, React Router, Framer Motion, TypeScript, and Next.js."
+    "category": "Delivery Deadline Penalty",
+    "question": "What is the penalty for the provider missing a delivery milestone?",
+    "expected_answer": "Not found in the document. The Salesforce MSA is a subscription services agreement and does not define delivery milestone penalties. Service obligations are governed by the applicable Order Form."
   },
   {
     "id": 4,
-    "category": "Backend Skills",
-    "question": "What backend and infrastructure skills does Abhishek have?",
-    "expected_answer": "Node.js, Express, REST API, Redux, GraphQL (basic), Docker (basic), and CI/CD basics."
+    "category": "Termination Conditions",
+    "question": "Under what conditions can either party terminate this agreement?",
+    "expected_answer": "Either party may terminate the agreement for cause if the other party is in material breach and fails to cure the breach within 30 days of written notice of the breach."
   },
   {
     "id": 5,
-    "category": "Projects",
-    "question": "What is the MentorKrish project?",
-    "expected_answer": "MentorKrish is a deployed website client project built by Abhishek."
+    "category": "Termination Notice Period",
+    "question": "How many days written notice is required to terminate for convenience?",
+    "expected_answer": "Not found in the document. The Salesforce MSA does not provide a termination for convenience clause. Termination requires a material breach that remains uncured after 30 days written notice."
   },
   {
     "id": 6,
-    "category": "Projects",
-    "question": "What full stack web app project did Abhishek build?",
-    "expected_answer": "Abhishek built a Full Stack Web App involving DSA basics, completed between June and July 2025."
+    "category": "Limitation of Liability",
+    "question": "What is the maximum liability cap defined in this contract?",
+    "expected_answer": "The aggregate liability of each party shall not exceed the total amount paid by the customer for the services giving rise to the liability in the twelve months preceding the claim."
   },
   {
     "id": 7,
-    "category": "Leadership",
-    "question": "What leadership or extracurricular activities has Abhishek done?",
-    "expected_answer": "Abhishek coordinated a college project/ERP 2.0 hackathon, acted as a Super 60 Coordinator mentoring 200+ students, and ran technical sessions/SkillUp C++ workshops. (Any of these are valid)."
+    "category": "Intellectual Property",
+    "question": "Who retains ownership of intellectual property created under this agreement?",
+    "expected_answer": "Salesforce and its affiliates reserve all right, title and interest in the services. Customers retain ownership of their own data. Salesforce is granted a limited license to use customer data solely to provide and operate the services."
   },
   {
     "id": 8,
-    "category": "Freelance",
-    "question": "Has Abhishek done any freelance work?",
-    "expected_answer": "Yes, Abhishek has done freelance graphic design work."
+    "category": "Confidentiality Duration",
+    "question": "How long do confidentiality obligations remain in force after termination?",
+    "expected_answer": "Confidentiality obligations survive termination or expiration of the agreement. Protection of customer data obligations survive for as long as Salesforce retains possession of customer data."
   },
   {
     "id": 9,
-    "category": "Intermediate Skills",
-    "question": "Which technologies does Abhishek have intermediate proficiency in?",
-    "expected_answer": "TypeScript, Next.js, Node.js, Express, and REST API."
+    "category": "Governing Law",
+    "question": "Which state or jurisdiction governs this agreement?",
+    "expected_answer": "For US-based customers, the agreement is governed by California or Delaware state law and United States federal law, depending on the specific Salesforce contracting entity named in the Order Form."
   },
   {
     "id": 10,
-    "category": "Summary",
-    "question": "How would you summarise Abhishek's profile?",
-    "expected_answer": "Abhishek Sharma is a frontend-focused full stack developer skilled in React, Next.js, Node.js, and modern web tooling, with experience in deployed client projects, hackathons, and freelance design."
+    "category": "Dispute Resolution",
+    "question": "What is the defined process for resolving disputes between the parties?",
+    "expected_answer": "Payment disputes must be raised in good faith with diligent cooperation to resolve. Salesforce will not exercise overdue charge rights while a customer is disputing charges reasonably and in good faith."
   }
 ]

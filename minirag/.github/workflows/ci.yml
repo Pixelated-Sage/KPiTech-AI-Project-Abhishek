@@ -1,0 +1,76 @@
+name: MiniRAG CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Backend: lint + unit/integration tests
+  # ──────────────────────────────────────────────
+  backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: minirag/backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            fastapi uvicorn[standard] python-multipart \
+            pdfplumber sentence-transformers chromadb \
+            langchain-text-splitters openai python-dotenv \
+            numpy pytest pytest-asyncio httpx
+
+      - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          GROQ_API_KEY: dummy-key-for-ci   # mocked in tests, never hits Groq
+          CHROMA_PERSIST_DIR: /tmp/chroma_ci
+          EMBEDDING_MODEL: all-MiniLM-L6-v2
+        run: |
+          pytest tests -v --tb=short
+
+  # ──────────────────────────────────────────────
+  # Frontend: type-check + lint
+  # ──────────────────────────────────────────────
+  frontend:
+    name: Frontend Type-Check & Lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: minirag/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: minirag/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx next lint --max-warnings 0

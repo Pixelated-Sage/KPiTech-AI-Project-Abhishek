@@ -14,7 +14,7 @@ type Message = {
 }
 
 const SUGGESTIONS = [
-  "What are Abhishek's skills?",
+  "What are",
   "Tell me about his projects",
   "How can I contact him?"
 ]
