@@ -11,8 +11,6 @@ async def upload_document(file: UploadFile, request: Request):
         if not (file.filename or "").endswith(".pdf"):
             raise HTTPException(400, "Only PDF files accepted")
 
-    from minirag.backend.main import get_services
-    embedder, vector_store, _, _ = get_services(request.app)
     contents = await file.read()
     if len(contents) < 100:
         raise HTTPException(422, "File appears empty")
@@ -22,6 +20,8 @@ async def upload_document(file: UploadFile, request: Request):
         tmp_path = f.name
 
     try:
+        from minirag.backend.main import get_services
+        embedder, vector_store, _, _ = get_services(request.app)
         from minirag.backend.services.pdf_extractor import extract_pdf
         from minirag.backend.services.chunker import chunk_document
         import traceback
