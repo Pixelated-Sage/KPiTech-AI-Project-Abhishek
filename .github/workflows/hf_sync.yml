@@ -30,6 +30,7 @@ jobs:
           git config --global user.email "bot@example.com"
           git config --global user.name "Bot"
           git init
+          git checkout -b main
           git add .
           git commit -m "Deploy to Hugging Face"
           git push https://ThepixelSage:$HF_TOKEN@huggingface.co/spaces/ThepixelSage/minirag-backend main -f
