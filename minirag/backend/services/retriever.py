@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-
+from minirag.backend.services.embedder import EmbeddingService
+from minirag.backend.services.vector_store import VectorStoreService
 @dataclass
 class RetrievalResult:
     rank: int

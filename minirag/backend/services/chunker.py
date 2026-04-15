@@ -1,5 +1,6 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from dataclasses import dataclass
+from minirag.backend.services.pdf_extractor import PageContent
 
 @dataclass
 class Chunk:
