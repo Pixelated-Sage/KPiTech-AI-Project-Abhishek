@@ -74,3 +74,11 @@ app.include_router(evaluate.router, prefix="/api")
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+@app.get("/")
+async def root():
+    return {
+        "message": "MiniRAG AI Backend is running successfully!",
+        "health_check": "/api/health",
+        "docs": "/docs"
+    }

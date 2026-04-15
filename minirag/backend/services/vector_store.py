@@ -10,6 +10,11 @@ class VectorStoreService:
         Data is stored at ./chroma_data/ as SQLite + binary files.
         """
         self.client = chromadb.PersistentClient(path=persist_dir)
+        # Attempt to load existing collection if it exists
+        try:
+            self.collection = self.client.get_collection(name="msa_chunks")
+        except Exception:
+            self.collection = None
     
     def create_collection(self, name: str = "msa_chunks"):
         """
