@@ -1,3 +1,4 @@
+import os
 import chromadb
 from chromadb.config import Settings
 
@@ -9,6 +10,7 @@ class VectorStoreService:
         PersistentClient: data survives process restarts.
         Data is stored at ./chroma_data/ as SQLite + binary files.
         """
+        os.makedirs(persist_dir, exist_ok=True)
         self.client = chromadb.PersistentClient(path=persist_dir)
         # Attempt to load existing collection if it exists
         try:
