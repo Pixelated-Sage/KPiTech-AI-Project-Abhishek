@@ -3,60 +3,60 @@
     "id": 1,
     "category": "Payment Terms",
     "question": "When is an invoice due after it is issued?",
-    "expected_answer": "Invoiced fees are due net 30 days from the invoice date."
+    "expected_answer": "Unless otherwise stated in the Order Form, invoiced fees are due net 30 days from the invoice date. (Section 5.2 – Invoicing and Payment)"
   },
   {
     "id": 2,
     "category": "Late Payment Penalty",
     "question": "Is there a penalty for late payment, and what is the rate?",
-    "expected_answer": "Overdue charges accrue late interest at the rate of 1.5% of the outstanding balance per month, or the maximum rate permitted by law, whichever is lower."
+    "expected_answer": "Yes. If any invoiced amount is not received by SFDC by the due date, those charges may accrue late interest at the rate of 1.5% of the outstanding balance per month, or the maximum rate permitted by law, whichever is lower. In addition, SFDC may condition future subscription renewals and Order Forms on payment terms shorter than those specified in the Invoicing and Payment section. (Section 5.3 – Overdue Charges)"
   },
   {
     "id": 3,
     "category": "Delivery Deadline Penalty",
     "question": "What is the penalty for the provider missing a delivery milestone?",
-    "expected_answer": "Not found in the document. The Salesforce MSA is a subscription services agreement and does not define delivery milestone penalties. Service obligations are governed by the applicable Order Form."
+    "expected_answer": "The Salesforce MSA does not define delivery milestones or penalties for missing them. This is a subscription services agreement; service availability obligations (24/7 uptime with limited planned downtime exceptions) are described in Section 2.1. Specific service-level commitments and associated remedies, if any, are governed by the applicable Order Form and Documentation, not by the MSA itself."
   },
   {
     "id": 4,
     "category": "Termination Conditions",
     "question": "Under what conditions can either party terminate this agreement?",
-    "expected_answer": "Either party may terminate the agreement for cause if the other party is in material breach and fails to cure the breach within 30 days of written notice of the breach."
+    "expected_answer": "A party may terminate this Agreement for cause in two situations: (i) upon 30 days written notice to the other party of a material breach, if such breach remains uncured at the expiration of that 30-day period; or (ii) if the other party becomes the subject of a petition in bankruptcy or any other proceeding relating to insolvency, receivership, liquidation, or assignment for the benefit of creditors. Additionally, if a party is acquired by or undergoes a change of control in favor of a direct competitor of the other party, the other party may terminate the Agreement upon written notice. (Section 11.3 – Termination)"
   },
   {
     "id": 5,
     "category": "Termination Notice Period",
     "question": "How many days written notice is required to terminate for convenience?",
-    "expected_answer": "Not found in the document. The Salesforce MSA does not provide a termination for convenience clause. Termination requires a material breach that remains uncured after 30 days written notice."
+    "expected_answer": "The Salesforce MSA does not include a termination for convenience clause. Termination is only available for cause — specifically, upon 30 days written notice of a material breach that remains uncured, or upon the other party's insolvency. Subscriptions auto-renew for one-year terms unless either party gives written notice of non-renewal at least 30 days before the end of the current subscription term. (Sections 11.2 and 11.3)"
   },
   {
     "id": 6,
     "category": "Limitation of Liability",
     "question": "What is the maximum liability cap defined in this contract?",
-    "expected_answer": "The aggregate liability of each party shall not exceed the total amount paid by the customer for the services giving rise to the liability in the twelve months preceding the claim."
+    "expected_answer": "In no event shall the aggregate liability of each party, together with all of its affiliates, arising out of or related to this Agreement exceed the total amount paid by Customer and its affiliates for the services giving rise to the liability in the twelve (12) months preceding the first incident out of which the liability arose. This cap applies whether the action is in contract or tort and regardless of the theory of liability, but does not limit Customer's payment obligations under the Fees and Payment section. Additionally, neither party nor its affiliates shall have any liability for lost profits, revenues, goodwill, or any indirect, special, incidental, consequential, cover, business interruption, or punitive damages. (Sections 10.1 and 10.2)"
   },
   {
     "id": 7,
     "category": "Intellectual Property",
     "question": "Who retains ownership of intellectual property created under this agreement?",
-    "expected_answer": "Salesforce and its affiliates reserve all right, title and interest in the services. Customers retain ownership of their own data. Salesforce is granted a limited license to use customer data solely to provide and operate the services."
+    "expected_answer": "SFDC, its affiliates, licensors, and content providers reserve all right, title, and interest in and to the Services and Content, including all related intellectual property rights. No rights are granted to Customer other than as expressly set forth in the Agreement. Customer retains ownership of Customer Data and grants SFDC only a worldwide, limited-term license to host, copy, use, transmit, and display Customer Data solely as necessary to provide and operate the Services. Additionally, Customer grants SFDC a worldwide, perpetual, irrevocable, royalty-free license to use and incorporate feedback provided by Customer or Users. (Sections 6.1, 6.3, and 6.4)"
   },
   {
     "id": 8,
     "category": "Confidentiality Duration",
     "question": "How long do confidentiality obligations remain in force after termination?",
-    "expected_answer": "Confidentiality obligations survive termination or expiration of the agreement. Protection of customer data obligations survive for as long as Salesforce retains possession of customer data."
+    "expected_answer": "The Confidentiality section explicitly survives any termination or expiration of the Agreement (Section 11.5 – Surviving Provisions). The Protection of Customer Data obligations (Section 2.2) also survive termination or expiration for as long as SFDC retains possession of Customer Data. Upon Customer's request within 30 days after the effective date of termination or expiration, SFDC will make Customer Data available for export or download; after that 30-day window, SFDC will delete or destroy all copies of Customer Data. No fixed end date is stated for general confidentiality obligations."
   },
   {
     "id": 9,
     "category": "Governing Law",
     "question": "Which state or jurisdiction governs this agreement?",
-    "expected_answer": "For US-based customers, the agreement is governed by California or Delaware state law and United States federal law, depending on the specific Salesforce contracting entity named in the Order Form."
+    "expected_answer": "The governing law depends on where the Customer is domiciled. For customers domiciled in any country in North or South America other than Brazil or Canada, the contracting entity is Salesforce, Inc. (a Delaware corporation) and the governing law is California state law and controlling United States federal law, with exclusive jurisdiction in San Francisco, California, USA. For Brazilian customers, governing law is Brazil. For Canadian customers, Ontario and controlling Canadian federal law applies. For European customers, governing law varies by country (e.g., England for most EMEA, France for French customers, Germany for German customers). (Section 12.9 – SFDC Contracting Entity, Notices, Governing Law, and Venue)"
   },
   {
     "id": 10,
     "category": "Dispute Resolution",
     "question": "What is the defined process for resolving disputes between the parties?",
-    "expected_answer": "Payment disputes must be raised in good faith with diligent cooperation to resolve. Salesforce will not exercise overdue charge rights while a customer is disputing charges reasonably and in good faith."
+    "expected_answer": "For general payment disputes, SFDC will not exercise its Overdue Charges or Suspension of Service rights if Customer is disputing the applicable charges reasonably and in good faith and is cooperating diligently to resolve the dispute (Section 5.5 – Payment Disputes). For customers domiciled in India, a specific arbitration process applies: parties must first attempt informal resolution within 10 business days; if unresolved, disputes are settled by binding arbitration before a 3-arbitrator panel under the Indian Arbitration and Conciliation Act, 1996, with the seat in Bengaluru, India (Section 12.16.1). For all other customers, disputes are subject to the exclusive jurisdiction of the courts identified in the governing law table under Section 12.9."
   }
 ]

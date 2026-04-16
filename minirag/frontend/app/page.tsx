@@ -3,59 +3,180 @@ import { useState, useRef, useEffect } from "react"
 import { FileUpload } from "@/components/FileUpload"
 import { EvaluationTable } from "@/components/EvaluationTable"
 import { api, UploadResult, QueryResult, EvalResult } from "@/lib/api"
-import { Paperclip, Globe, Smile, MoreHorizontal, Send, X, Bot, Activity, CheckCircle2, ChevronRight } from "lucide-react"
+import {
+  Globe, Smile, MoreHorizontal, Send, X, Bot, Activity,
+  CheckCircle2, ChevronRight, FileText, Layers, Cpu,
+  Trash2, BarChart2, Upload, Zap, Clock
+} from "lucide-react"
 import { SimilarityReport } from "@/components/SimilarityReport"
 
-type Message = {
-  id: string;
-  role: "agent" | "user";
-  content: string;
-  queryResult?: QueryResult;
-}
+/* ─── Constants ─────────────────────────────────── */
+const EMOJIS = [
+  '😊','👍','🙏','❓','📄','✅','⚠️','🔍','💡','📌',
+  '🎯','🤔','👀','💬','📝','🚀','⏳','🔒','💰','🗓️',
+]
+
+const MAX_CHARS = 200
+const MIN_CHARS = 2
 
 const SUGGESTIONS = [
   "When is an invoice due after it is issued?",
   "Is there a penalty for late payment, and what is the rate?",
-  "What is the penalty for the provider missing a delivery milestone?"
+  "What is the penalty for the provider missing a delivery milestone?",
 ]
 
+const GREETING_PATTERNS = /^(hi|hello|hey|howdy|hiya|sup|what'?s up|good\s?(morning|afternoon|evening|day)|namaste|helo|hii+|heyyy*|yo|greetings|salut|bonjour|ola|hola|ciao)\b/i
+
+const GREETING_REPLIES = [
+  "Hello! 👋 I'm MiniRAG, your AI assistant for this document. Feel free to ask me anything about its contents!",
+  "Hey there! 😊 I'm here to help you explore this document. What would you like to know?",
+  "Hi! Great to meet you. I'm MiniRAG — ask me anything about the contract or document you uploaded!",
+  "Hello! I'm ready to assist. Go ahead and ask me a question about the document. 📄",
+  "Hey! 👋 How can I help you today? I can answer questions about the document you've uploaded.",
+]
+
+/* ─── Types ──────────────────────────────────────── */
+type Message = {
+  id: string
+  role: "agent" | "user"
+  content: string
+  queryResult?: QueryResult
+  isGreeting?: boolean
+}
+
+/* ─── Shared panel style ─────────────────────────── */
+const PANEL_STYLE = {
+  background: "rgba(17,19,24,0.98)",
+  backdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+}
+
+/* ─── Upload Screen ──────────────────────────────── */
+function UploadScreen({ onDone }: { onDone: (r: UploadResult) => void }) {
+  return (
+    <main style={{ minHeight: "100dvh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.25rem", position: "relative", overflow: "hidden" }}
+      className="bg-grid">
+      {/* Orbs — fixed so they're out of flex flow and always fill the viewport edge */}
+      <div style={{ position: "fixed", top: "-20%", left: "-10%", width: 520, height: 520, borderRadius: "9999px", filter: "blur(90px)", pointerEvents: "none", opacity: 0.18, background: "radial-gradient(circle, #3b82f6, transparent 65%)", zIndex: 0 }} />
+      <div style={{ position: "fixed", bottom: "-20%", right: "-8%",  width: 440, height: 440, borderRadius: "9999px", filter: "blur(90px)", pointerEvents: "none", opacity: 0.14, background: "radial-gradient(circle, #6366f1, transparent 65%)", zIndex: 0 }} />
+
+      <div className="relative w-full max-w-[420px] rounded-3xl p-8 space-y-7 shadow-2xl"
+        style={{ ...PANEL_STYLE, zIndex: 1 }}>
+
+        {/* Logo */}
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.25), rgba(99,102,241,0.1))", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <Bot className="w-9 h-9 text-white" />
+            </div>
+            {/* Online dot */}
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2" style={{ borderColor: "#0a0b0e" }} />
+            </span>
+          </div>
+        </div>
+
+        {/* Heading */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight"
+            style={{ background: "linear-gradient(135deg, #ffffff 30%, rgba(255,255,255,0.5) 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            MiniRAG
+          </h1>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Upload your MSA or contract PDF to start asking questions
+          </p>
+        </div>
+
+        <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)" }} />
+
+        <FileUpload onDone={onDone} />
+
+        <p className="text-center text-[11px]" style={{ color: "rgba(255,255,255,0.18)" }}>
+          Processed in-memory · never stored persistently
+        </p>
+      </div>
+    </main>
+  )
+}
+
+/* ─── Main Page ──────────────────────────────────── */
 export default function Home() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
+  const [inputError, setInputError] = useState<string | null>(null)
   const [querying, setQuerying] = useState(false)
   const [showEval, setShowEval] = useState(false)
   const [evalResult, setEvalResult] = useState<EvalResult | null>(null)
   const [evaluating, setEvaluating] = useState(false)
+  // Icon panels
+  const [showDocInfo, setShowDocInfo] = useState(false)
+  const [showEmoji, setShowEmoji] = useState(false)
+  const [showMore, setShowMore] = useState(false)
+
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, querying])
 
+  // Close panels on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
+        setShowDocInfo(false); setShowEmoji(false); setShowMore(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
+
+  // Auto-grow textarea
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = Math.min(el.scrollHeight, 140) + "px"
+  }, [input])
+
+  function validateInput(text: string): string | null {
+    const t = text.trim()
+    if (!t) return "Please type a message before sending."
+    if (t.length < MIN_CHARS) return "Message is too short. Please be more specific."
+    if (text.length > MAX_CHARS) return `Message exceeds ${MAX_CHARS} characters.`
+    return null
+  }
+
   async function handleQuery(question: string) {
-    if (!question.trim() || querying) return
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: question }
+    const err = validateInput(question)
+    if (err) { setInputError(err); return }
+    if (querying) return
+    setInputError(null)
+
+    const trimmed = question.trim()
+    const userMsg: Message = { id: Date.now().toString(), role: "user", content: trimmed }
     setMessages(prev => [...prev, userMsg])
     setInput("")
+
+    if (GREETING_PATTERNS.test(trimmed)) {
+      const reply = GREETING_REPLIES[Math.floor(Math.random() * GREETING_REPLIES.length)]
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: "agent", content: reply, isGreeting: true }])
+      return
+    }
+
     setQuerying(true)
-    
     try {
-      const res = await api.query(question)
-      const agentMsg: Message = { 
-        id: (Date.now() + 1).toString(), 
-        role: "agent", 
-        content: res.answer,
-        queryResult: res
-      }
-      setMessages(prev => [...prev, agentMsg])
+      const res = await api.query(trimmed)
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: "agent", content: res.answer, queryResult: res }])
     } catch (e) {
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "agent",
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(), role: "agent",
         content: "Sorry, I encountered an error: " + (e instanceof Error ? e.message : "Unknown error")
-      }
-      setMessages(prev => [...prev, errorMsg])
+      }])
     } finally {
       setQuerying(false)
     }
@@ -66,122 +187,153 @@ export default function Home() {
     try {
       setEvalResult(await api.evaluate())
       setShowEval(true)
-    } catch {
-      alert("Evaluation failed")
-    } finally {
-      setEvaluating(false)
-    }
+    } catch { alert("Evaluation failed") }
+    finally { setEvaluating(false) }
   }
 
-  // Initial Upload Screen
-  if (!uploadResult) {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-6 text-foreground">
-        <div className="w-full max-w-md space-y-8 bg-panel border-white/5 border rounded-3xl p-8 shadow-2xl">
-          <div className="flex justify-center">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center relative">
-              <Bot className="w-8 h-8 text-white" />
-              <div className="absolute bottom-1 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#15181c]" />
-            </div>
-          </div>
-          <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome to MiniRAG</h1>
-            <p className="text-white/60">Upload the MSA Document</p>
-          </div>
-          <FileUpload onDone={setUploadResult} />
-        </div>
-      </main>
-    )
-  }
+  if (!uploadResult) return <UploadScreen onDone={setUploadResult} />
 
   return (
-    <main className="h-screen flex items-center justify-center text-foreground p-0 md:p-6">
-      <div className="w-full h-full md:h-[90vh] md:max-w-2xl bg-background md:border border-white/10 md:rounded-[2.5rem] flex flex-col relative overflow-hidden shadow-2xl">
-        
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-background/80 backdrop-blur-md z-10">
+    <main className="h-dvh flex items-center justify-center text-foreground p-0 md:p-6"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+
+      {/* Card container */}
+      <div className="w-full h-full md:h-[92vh] md:max-w-2xl flex flex-col relative shadow-2xl md:rounded-4xl"
+        style={{ background: "#0d0f14", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "2rem" }}>
+
+        {/* ── Header ── */}
+        <header className="flex items-center justify-between px-5 py-3.5 z-10 shrink-0"
+          style={{ background: "rgba(13,15,20,0.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.3), rgba(99,102,241,0.15))", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <Bot className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
               </div>
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2"
+                style={{ borderColor: "#0d0f14" }} />
             </div>
-            <span className="font-medium text-lg tracking-wide">MiniRAG.ai</span>
+            <div>
+              <p className="text-sm font-semibold text-white leading-none">MiniRAG.ai</p>
+              <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                {uploadResult.total_chunks} chunks · {uploadResult.total_pages} pages
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={runEval} title="Run Evaluation" className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-              {evaluating ? <Activity className="w-4 h-4 animate-spin text-purple-400" /> : <Activity className="w-4 h-4 text-white/70" />}
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={runEval}
+              title="Run Evaluation"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+              style={{ background: evaluating ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.06)", color: evaluating ? "#a78bfa" : "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Activity className={`w-3.5 h-3.5 ${evaluating ? "animate-spin" : ""}`} />
+              {evaluating ? "Running…" : "Evaluate"}
             </button>
-            <button onClick={() => { setUploadResult(null); setMessages([]); setShowEval(false) }} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-              <X className="w-4 h-4 text-white/70" />
+            <button
+              onClick={() => { setUploadResult(null); setMessages([]); setShowEval(false) }}
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              <X className="w-4 h-4" />
             </button>
           </div>
         </header>
 
-        {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scroll-smooth">
+        {/* ── Chat ── */}
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center px-6 animate-in fade-in zoom-in duration-500">
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center relative mb-6">
-                <Bot className="w-10 h-10 text-white" />
-                <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-4 border-background" />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative"
+                style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.1))", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <Bot className="w-8 h-8 text-white/80" />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2" style={{ borderColor: "#0d0f14" }} />
               </div>
-              <h2 className="text-4xl font-semibold tracking-tight mb-3">Hello 👋</h2>
-              <p className="text-white/50 text-lg">MiniRAG is here to answer questions about the document.</p>
+              <h2 className="text-3xl font-bold tracking-tight mb-2">Hello 👋</h2>
+              <p style={{ color: "rgba(255,255,255,0.45)" }} className="text-base">
+                Ask me anything about your document.
+              </p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {messages.map((msg) => (
-                <div key={msg.id} className="animate-in slide-in-from-bottom-2 fade-in duration-300">
+                <div key={msg.id} className="animate-in slide-in-from-bottom-1 fade-in duration-200">
                   {msg.role === "agent" ? (
-                    <div className="bg-agent border border-white/5 rounded-2xl rounded-tl-sm p-5 shadow-sm max-w-[95%]">
-                      <div className="flex items-center justify-between mb-3">
+                    /* ── Agent bubble ── */
+                    <div className="max-w-[95%] rounded-2xl rounded-tl-sm overflow-hidden"
+                      style={{ background: "#161920", border: "1px solid rgba(255,255,255,0.06)" }}>
+
+                      {/* Agent header */}
+                      <div className="flex items-center justify-between px-4 pt-3.5 pb-2"
+                        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                         <div className="flex items-center gap-2">
-                          <Bot className="w-4 h-4 text-white/70" />
-                          <span className="font-medium text-sm text-white/90">MiniRAG.ai</span>
+                          <Bot className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.5)" }} />
+                          <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>MiniRAG</span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#1a2332]/50 text-blue-400 rounded-full border border-blue-500/20 text-xs font-medium">
-                          <CheckCircle2 className="w-3 h-3" />
-                          AI Agent
-                        </div>
+                        {!msg.isGreeting && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                            style={{ background: "rgba(59,130,246,0.12)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.2)" }}>
+                            <CheckCircle2 className="w-2.5 h-2.5" /> AI Agent
+                          </span>
+                        )}
                       </div>
-                      <div className="text-white/80 leading-relaxed whitespace-pre-wrap text-[15px]">
+
+                      {/* Answer */}
+                      <div className="px-4 py-3.5 text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,0.82)" }}>
                         {msg.content}
                       </div>
-                      
+
+                      {/* Retrieval details */}
                       {msg.queryResult && (
-                        <div className="mt-4 pt-4 border-t border-white/10">
-                          <details className="group cursor-pointer">
-                            <summary className="flex items-center gap-2 text-xs font-medium text-white/50 hover:text-white/70 transition-colors list-none">
-                              <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" />
-                              View Retrieval Logs & Details
-                            </summary>
-                            <div className="mt-3 pt-2">
-                               <div className="text-xs text-white/40 mb-3 space-y-1">
-                                  <p>Model: {msg.queryResult.model_used}</p>
-                                  <p>Retrieval: {msg.queryResult.retrieval_time_ms}ms | Generation: {msg.queryResult.generation_time_ms}ms</p>
-                               </div>
-                               <SimilarityReport rows={msg.queryResult.similarity_report} />
-                            </div>
-                          </details>
-                        </div>
+                        <details className="group" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                          <summary className="flex items-center gap-2 px-4 py-2.5 cursor-pointer list-none select-none text-xs font-medium transition-colors hover:bg-white/3"
+                            style={{ color: "rgba(255,255,255,0.35)" }}>
+                            <ChevronRight className="w-3.5 h-3.5 group-open:rotate-90 transition-transform" />
+                            Retrieval Details
+                            <span className="ml-auto flex items-center gap-3">
+                              <span className="flex items-center gap-1">
+                                <Zap className="w-3 h-3 text-amber-400" />
+                                {msg.queryResult.retrieval_time_ms}ms
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-blue-400" />
+                                {msg.queryResult.generation_time_ms}ms
+                              </span>
+                            </span>
+                          </summary>
+                          <div className="px-4 pb-4 pt-2">
+                            <p className="text-[10px] mb-2" style={{ color: "rgba(255,255,255,0.25)" }}>
+                              Model: {msg.queryResult.model_used}
+                            </p>
+                            <SimilarityReport rows={msg.queryResult.similarity_report} />
+                          </div>
+                        </details>
                       )}
                     </div>
                   ) : (
-                    <div className="bg-user rounded-2xl rounded-tr-sm p-4 w-fit max-w-[85%] ml-auto shadow-sm border border-blue-500/10">
-                       <p className="text-white/90 text-[15px]">{msg.content}</p>
+                    /* ── User bubble ── */
+                    <div className="ml-auto w-fit max-w-[82%] rounded-2xl rounded-tr-sm px-4 py-3"
+                      style={{ background: "#1a2236", border: "1px solid rgba(59,130,246,0.12)" }}>
+                      <p className="text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,0.88)" }}>{msg.content}</p>
                     </div>
                   )}
                 </div>
               ))}
+
+              {/* Thinking dots */}
               {querying && (
-                <div className="bg-agent border border-white/5 rounded-2xl rounded-tl-sm p-5 shadow-sm w-fit animate-pulse">
-                   <div className="flex gap-1 items-center h-4">
-                     <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce"></div>
-                     <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce delay-75"></div>
-                     <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce delay-150"></div>
-                   </div>
+                <div className="animate-in fade-in duration-200">
+                  <div className="w-fit rounded-2xl rounded-tl-sm px-5 py-4"
+                    style={{ background: "#161920", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="flex gap-1.5 items-center">
+                      {[0, 150, 300].map(d => (
+                        <div key={d} className="w-2 h-2 rounded-full animate-bounce"
+                          style={{ background: "rgba(255,255,255,0.35)", animationDelay: `${d}ms` }} />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               <div ref={chatEndRef} />
@@ -189,78 +341,201 @@ export default function Home() {
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="px-4 pb-6 pt-2 bg-background z-10 w-full relative">
-          
+        {/* ── Input Area ── */}
+        <div className="px-4 pt-2 shrink-0"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))", background: "rgba(13,15,20,0.95)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+
           {/* Suggestions */}
           {messages.length === 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hidden">
-              {SUGGESTIONS.map((sug, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleQuery(sug)}
-                  className="whitespace-nowrap px-4 py-3 bg-white/5 hover:bg-white/10 active:scale-95 transition-all outline-none rounded-xl text-white/70 text-sm font-medium border border-white/5 shrink-0"
-                >
-                  {sug}
+            <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hidden">
+              {SUGGESTIONS.map((s, i) => (
+                <button key={i} onClick={() => handleQuery(s)}
+                  className="whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-medium shrink-0 transition-all active:scale-95"
+                  style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  {s}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Form container */}
-          <form 
-            onSubmit={(e) => { e.preventDefault(); handleQuery(input) }} 
-            className="flex flex-col bg-[#15181c] border border-white/10 rounded-2xl transition-all focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20 shadow-lg"
-          >
-            <input
-              type="text"
+          {/* Form */}
+          <form onSubmit={e => { e.preventDefault(); handleQuery(input) }}
+            className="transition-all"
+            style={{
+              background: "#161920",
+              borderRadius: "1rem",
+              border: inputError
+                ? "1px solid rgba(239,68,68,0.4)"
+                : "1px solid rgba(255,255,255,0.08)",
+              boxShadow: inputError ? "0 0 0 2px rgba(239,68,68,0.1)" : "none"
+            }}>
+
+            <textarea
+              ref={textareaRef}
               value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="Type your message..."
+              onChange={e => {
+                if (e.target.value.length <= MAX_CHARS) setInput(e.target.value)
+                if (inputError) setInputError(null)
+              }}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleQuery(input) }
+              }}
+              placeholder="Ask about the document…"
               disabled={querying}
-              className="w-full bg-transparent text-white placeholder-white/30 px-5 py-4 outline-none text-[15px]"
+              rows={1}
+              className="w-full bg-transparent px-4 py-3.5 outline-none text-[15px] resize-none leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.88)", minHeight: 52, maxHeight: 140, borderRadius: "1rem 1rem 0 0" }}
             />
-            
-            <div className="flex items-center justify-between px-3 pb-3">
-               <div className="flex items-center gap-1">
-                 <button type="button" className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-white/40 hover:text-white/70"><Paperclip className="w-4 h-4" /></button>
-                 <button type="button" className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-white/40 hover:text-white/70"><Globe className="w-4 h-4" /></button>
-                 <button type="button" className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-white/40 hover:text-white/70"><Smile className="w-4 h-4" /></button>
-                 <button type="button" className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-white/40 hover:text-white/70"><MoreHorizontal className="w-4 h-4" /></button>
-               </div>
-               <button 
-                 type="submit" 
-                 disabled={!input.trim() || querying}
-                 className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:text-white/50 text-white transition-colors active:scale-95"
-               >
-                 <Send className="w-4 h-4 mr-0.5 mt-0.5" />
-               </button>
+
+            {/* Toolbar */}
+            <div className="flex items-center justify-between px-3 pb-3" ref={toolbarRef}>
+              <div className="flex items-center gap-0.5 relative">
+
+                {/* Globe: Doc Info */}
+                <div className="relative">
+                  <button type="button" title="Document Info"
+                    onClick={() => { setShowDocInfo(p => !p); setShowEmoji(false); setShowMore(false) }}
+                    className="p-2 rounded-full transition-colors"
+                    style={{ color: showDocInfo ? "#3b82f6" : "rgba(255,255,255,0.35)", background: showDocInfo ? "rgba(59,130,246,0.12)" : "transparent" }}>
+                    <Globe className="w-4 h-4" />
+                  </button>
+                  {showDocInfo && (
+                    <div className="absolute bottom-11 left-0 w-64 rounded-2xl shadow-2xl z-60 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150"
+                      style={PANEL_STYLE}>
+                      <p className="px-4 py-2.5 text-xs font-semibold" style={{ color: "rgba(255,255,255,0.7)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>Document Info</p>
+                      <div className="px-4 py-3 space-y-2.5">
+                        {[
+                          { icon: FileText, color: "#3b82f6", label: "Pages", val: uploadResult!.total_pages },
+                          { icon: Layers,   color: "#8b5cf6", label: "Chunks", val: uploadResult!.total_chunks },
+                          { icon: Cpu,      color: "#a78bfa", label: "Model", val: uploadResult!.embedding_model },
+                        ].map(({ icon: Icon, color, label, val }) => (
+                          <div key={label} className="flex items-center gap-2.5 text-xs">
+                            <Icon className="w-4 h-4 shrink-0" style={{ color }} />
+                            <span style={{ color: "rgba(255,255,255,0.4)" }}>{label}</span>
+                            <span className="ml-auto font-medium truncate max-w-[130px]" style={{ color: "rgba(255,255,255,0.75)" }} title={String(val)}>{val}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Smile: Emoji */}
+                <div className="relative">
+                  <button type="button" title="Emoji"
+                    onClick={() => { setShowEmoji(p => !p); setShowDocInfo(false); setShowMore(false) }}
+                    className="p-2 rounded-full transition-colors"
+                    style={{ color: showEmoji ? "#facc15" : "rgba(255,255,255,0.35)", background: showEmoji ? "rgba(250,204,21,0.1)" : "transparent" }}>
+                    <Smile className="w-4 h-4" />
+                  </button>
+                  {showEmoji && (
+                    <div className="absolute bottom-11 left-0 w-52 rounded-2xl shadow-2xl z-60 p-3 animate-in fade-in slide-in-from-bottom-2 duration-150"
+                      style={PANEL_STYLE}>
+                      <p className="text-[10px] mb-2 px-1" style={{ color: "rgba(255,255,255,0.3)" }}>Quick insert</p>
+                      <div className="grid grid-cols-5 gap-1">
+                        {EMOJIS.map(e => (
+                          <button key={e} type="button"
+                            onClick={() => { if (input.length < MAX_CHARS) { setInput(p => p + e); setShowEmoji(false) } }}
+                            className="text-xl w-9 h-9 flex items-center justify-center rounded-lg transition-all active:scale-90 hover:bg-white/10">
+                            {e}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* More: menu */}
+                <div className="relative">
+                  <button type="button" title="More options"
+                    onClick={() => { setShowMore(p => !p); setShowDocInfo(false); setShowEmoji(false) }}
+                    className="p-2 rounded-full transition-colors"
+                    style={{ color: showMore ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)", background: showMore ? "rgba(255,255,255,0.1)" : "transparent" }}>
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                  {showMore && (
+                    <div className="absolute bottom-11 left-0 w-52 rounded-2xl shadow-2xl z-60 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150"
+                      style={PANEL_STYLE}>
+                      {[
+                        { icon: Trash2,    color: "#f87171", label: "Clear Chat",     onClick: () => { setMessages([]); setShowMore(false) } },
+                        { icon: BarChart2, color: "#a78bfa", label: evaluating ? "Running…" : "Run Evaluation", onClick: () => { runEval(); setShowMore(false) }, disabled: evaluating },
+                      ].map(({ icon: Icon, color, label, onClick, disabled }) => (
+                        <button key={label} type="button" onClick={onClick} disabled={disabled}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors disabled:opacity-40"
+                          style={{ color: "rgba(255,255,255,0.65)" }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                          <Icon className="w-4 h-4 shrink-0" style={{ color }} />
+                          {label}
+                        </button>
+                      ))}
+                      <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+                      <button type="button"
+                        onClick={() => { setUploadResult(null); setMessages([]); setShowEval(false); setShowMore(false) }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors"
+                        style={{ color: "rgba(255,255,255,0.65)" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                        <Upload className="w-4 h-4 shrink-0" style={{ color: "#60a5fa" }} />
+                        New Document
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Char counter */}
+                <span className="text-[11px] font-mono tabular-nums ml-1 transition-colors"
+                  style={{ color: input.length >= MAX_CHARS ? "#f87171" : input.length >= MAX_CHARS - 30 ? "#fbbf24" : "rgba(255,255,255,0.18)" }}>
+                  {input.length > 0 ? `${input.length}/${MAX_CHARS}` : ""}
+                </span>
+              </div>
+
+              {/* Send */}
+              <button type="submit"
+                disabled={querying || input.length > MAX_CHARS}
+                className="w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-95 disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff" }}>
+                <Send className="w-3.5 h-3.5" />
+              </button>
             </div>
           </form>
+
+          {/* Hint / error */}
+          {inputError ? (
+            <p className="text-[11px] mt-1.5 px-1 flex items-center gap-1" style={{ color: "#f87171" }}>
+              ⚠ {inputError}
+            </p>
+          ) : (
+            <p className="text-center text-[10px] mt-2" style={{ color: "rgba(255,255,255,0.18)" }}>
+              Enter to send · Shift+Enter for new line
+            </p>
+          )}
         </div>
 
-        {/* Evaluation Modal/Drawer Overlay */}
+        {/* ── Eval Modal ── */}
         {showEval && evalResult && (
-          <div className="absolute inset-0 bg-background/95 backdrop-blur-md z-50 flex flex-col p-6 overflow-y-auto animate-in slide-in-from-bottom-10">
-            <div className="flex justify-between items-center mb-6 mt-4">
-              <h2 className="text-2xl font-bold">Evaluation Results</h2>
-              <button onClick={() => setShowEval(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20"><X className="w-5 h-5"/></button>
+          <div className="absolute inset-0 z-50 flex flex-col"
+            style={{ background: "rgba(10,11,14,0.97)", backdropFilter: "blur(20px)" }}>
+            <div className="flex items-center justify-between px-5 py-4 shrink-0"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+              <div>
+                <h2 className="text-lg font-bold text-white">Evaluation Results</h2>
+                <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  RAG system vs. ground truth
+                </p>
+              </div>
+              <button onClick={() => setShowEval(false)}
+                className="w-9 h-9 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
+                style={{ color: "rgba(255,255,255,0.5)" }}>
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <EvaluationTable data={evalResult} />
+            <div className="flex-1 overflow-y-auto px-4 py-5">
+              <EvaluationTable data={evalResult} />
+            </div>
           </div>
         )}
-
       </div>
-
-      <style jsx global>{`
-        .scrollbar-hidden::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hidden {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </main>
   )
 }
