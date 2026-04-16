@@ -42,6 +42,7 @@ type Message = {
   content: string
   queryResult?: QueryResult
   isGreeting?: boolean
+  isRateLimit?: boolean
 }
 
 /* ─── Shared panel style ─────────────────────────── */
@@ -173,9 +174,14 @@ export default function Home() {
       const res = await api.query(trimmed)
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: "agent", content: res.answer, queryResult: res }])
     } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unknown error"
+      // Detect rate-limit: Groq returns 429 with 'rate_limit_exceeded' or 'Rate limit reached'
+      const isRateLimit = /429|rate.?limit|rate_limit_exceeded/i.test(msg)
       setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(), role: "agent",
-        content: "Sorry, I encountered an error: " + (e instanceof Error ? e.message : "Unknown error")
+        id: (Date.now() + 1).toString(),
+        role: "agent",
+        content: msg,
+        isRateLimit,
       }])
     } finally {
       setQuerying(false)
@@ -261,6 +267,34 @@ export default function Home() {
               {messages.map((msg) => (
                 <div key={msg.id} className="animate-in slide-in-from-bottom-1 fade-in duration-200">
                   {msg.role === "agent" ? (
+                    msg.isRateLimit ? (
+                      /* ── Rate-limit bubble ── */
+                      <div className="max-w-[95%] rounded-2xl rounded-tl-sm overflow-hidden"
+                        style={{ background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.25)" }}>
+                        <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-2"
+                          style={{ borderBottom: "1px solid rgba(251,191,36,0.15)" }}>
+                          <span className="text-lg">⏳</span>
+                          <span className="text-sm font-semibold" style={{ color: "#fbbf24" }}>Rate Limit Reached</span>
+                        </div>
+                        <div className="px-4 py-3.5 space-y-2">
+                          <p className="text-[14px] leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
+                            The AI service has hit its daily token limit. Please wait a few minutes for the limit to reset, or reach out to the developer.
+                          </p>
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              onClick={() => setMessages(prev => prev.filter(m => m.id !== msg.id))}
+                              className="text-[11px] px-3 py-1.5 rounded-full transition-all active:scale-95"
+                              style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}
+                            >
+                              Dismiss
+                            </button>
+                            <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                              Try again in a few minutes
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
                     /* ── Agent bubble ── */
                     <div className="max-w-[95%] rounded-2xl rounded-tl-sm overflow-hidden"
                       style={{ background: "#161920", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -312,8 +346,8 @@ export default function Home() {
                         </details>
                       )}
                     </div>
+                    )
                   ) : (
-                    /* ── User bubble ── */
                     <div className="ml-auto w-fit max-w-[82%] rounded-2xl rounded-tr-sm px-4 py-3"
                       style={{ background: "#1a2236", border: "1px solid rgba(59,130,246,0.12)" }}>
                       <p className="text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,0.88)" }}>{msg.content}</p>
